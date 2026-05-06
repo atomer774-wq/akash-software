@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search Results</title>
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial;
+    color: white;
+
+    /* FULL BACKGROUND */
+    background: url("bg.png") no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+}
+
+/* Top buttons */
+.top-bar {
+    text-align: center;
+    padding: 10px;
+}
+
+/* Buttons */
+button {
+    margin: 5px;
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: none;
+    background: #00c6ff;
+    color: white;
+    cursor: pointer;
+}
+
+/* Result container */
+#result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Card */
+.card {
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+    width: 90%;
+    max-width: 400px;
+    margin: 10px;
+    padding: 15px;
+    border-radius: 15px;
+    text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top-bar">
+    <button onclick="goHome()">🏠 Home</button>
+    <button onclick="newSearch()">🔎 New Search</button>
+</div>
+
+<h2 style="text-align:center;">Search Results</h2>
+
+<div id="result"></div>
+
+<script>
+let products = [];
+
+async function loadData() {
+    let url = "https://opensheet.elk.sh/1CNcUt8rqMs2o9Q6vvhHoqnVrlTgKqcvTIIdRcaD8GCQ/Sheet1";
+    let res = await fetch(url);
+    let data = await res.json();
+
+    products = data.map(item => ({
+        model: (item.model || item.Model || "").trim(),
+        mrp: item.mrp || item.MRP,
+        ean: item.ean || item["EAN Code"] || item.EAN,
+        dimension: item.dimension || item.Dimension,
+        image: item.image || item.Image
+    }));
+
+    showResults();
+}
+
+function showResults(){
+    let params = new URLSearchParams(window.location.search);
+    let model = params.get("model");
+
+    if(!model){
+        document.getElementById("result").innerHTML = "❌ No Search Input";
+        return;
+    }
+
+    model = model.toLowerCase().trim();
+
+    let filtered = products.filter(p => 
+        p.model.toLowerCase().includes(model)
+    );
+
+    if(filtered.length > 0){
+        filtered.forEach(p => {
+            document.getElementById("result").innerHTML += `
+                <div class="card">
+                    <h3>${p.model}</h3>
+                    <p>MRP: ${p.mrp}</p>
+                    <button onclick="viewDetails('${p.model}')">View Details</button>
+                </div>
+            `;
+        });
+    } else {
+        document.getElementById("result").innerHTML = `
+            <div class="card">❌ No Product Found</div>
+        `;
+    }
+}
+
+/* VIEW DETAILS */
+function viewDetails(model){
+    window.location.href = "details.html?model=" + encodeURIComponent(model);
+}
+
+/* HOME */
+function goHome(){
+    window.location.href = "index.html";
+}
+
+/* NEW SEARCH */
+function newSearch(){
+    let model = prompt("Enter Model Name:");
+
+    if(model && model.trim() !== ""){
+        window.location.href = "search.html?model=" + encodeURIComponent(model);
+    }
+}
+
+loadData();
+</script>
+
+</body>
+</html>

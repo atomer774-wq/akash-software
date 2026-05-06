@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Akash Software</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: url("bg.png") no-repeat center/cover;
+    height: 100vh;
+}
+
+.search-box {
+    position: absolute;
+    top: 75%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+input {
+    width: 320px;
+    padding: 15px;
+    border-radius: 30px;
+    border: none;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    background: #00c6ff;
+    color: white;
+}
+
+/* Suggestions */
+#suggestions {
+    background: white;
+    color: black;
+    width: 320px;
+    border-radius: 10px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.suggestion-item {
+    padding: 10px;
+    cursor: pointer;
+}
+.suggestion-item:hover {
+    background: lightgray;
+}
+</style>
+</head>
+
+<body>
+
+<div class="search-box">
+    <input type="text" id="model" placeholder="Enter Model Name" onkeyup="showSuggestions()">
+    <div id="suggestions"></div>
+    <button onclick="search()">Search</button>
+</div>
+
+<script>
+let products = [];
+
+// 🔥 LOAD DATA
+async function loadData() {
+    let url = "https://opensheet.elk.sh/1CNcUt8rqMs2o9Q6vvhHoqnVrlTgKqcvTIIdRcaD8GCQ/Sheet1";
+    let res = await fetch(url);
+    let data = await res.json();
+
+    // FIX column names
+    products = data.map(item => ({
+        model: (item.model || item.Model || "").trim(),
+        mrp: item.mrp || item.MRP,
+        ean: item.ean || item["EAN Code"] || item.EAN,
+        dimension: item.dimension || item.Dimension,
+        image: item.image || item.Image
+    }));
+
+    console.log(products);
+}
+loadData();
+
+// 🔍 SUGGESTION
+function showSuggestions() {
+    let input = document.getElementById("model").value.toLowerCase().trim();
+    let box = document.getElementById("suggestions");
+
+    box.innerHTML = "";
+    if(input === "") return;
+
+    let filtered = products.filter(p => 
+        p.model.toLowerCase().includes(input)
+    );
+
+    filtered.forEach(p => {
+        let div = document.createElement("div");
+        div.innerText = p.model;
+        div.classList.add("suggestion-item");
+
+        div.onclick = function() {
+            document.getElementById("model").value = p.model;
+            box.innerHTML = "";
+        };
+
+        box.appendChild(div);
+    });
+}
+
+// 🔎 SEARCH
+function search() {
+    let model = document.getElementById("model").value;
+
+    if(model === ""){
+        alert("Enter model");
+        return;
+    }
+
+    window.location.href = "search.html?model=" + encodeURIComponent(model);
+}
+</script>
+
+</body>
+</html>

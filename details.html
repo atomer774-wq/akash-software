@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Details</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    color: white;
+    background: url("bg.png") no-repeat center/cover;
+}
+
+/* Center */
+#result {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Card */
+.card {
+    background: rgba(0,0,0,0.7);
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+}
+
+/* Image HD */
+img {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    margin-top: 15px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* Button */
+button {
+    margin-top: 10px;
+    padding: 10px 18px;
+    border-radius: 20px;
+    border: none;
+    background: #00c6ff;
+    color: white;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div id="result">Loading...</div>
+
+<script>
+
+async function loadData(){
+
+    let url = "https://opensheet.elk.sh/1CNcUt8rqMs2o9Q6vvhHoqnVrlTgKqcvTIIdRcaD8GCQ/Sheet1";
+
+    let res = await fetch(url);
+    let data = await res.json();
+
+    showDetails(data);
+}
+
+function showDetails(data){
+
+    let params = new URLSearchParams(window.location.search);
+    let model = params.get("model");
+
+    let p = data.find(x => 
+        (x.model || "").toLowerCase().trim() === model.toLowerCase().trim()
+    );
+
+    if(p){
+
+        let img = (p.images || "").trim();
+
+        document.getElementById("result").innerHTML = `
+            <div class="card">
+                <h2>${p.model}</h2>
+                <p><b>MRP:</b> ${p.mrp}</p>
+                <p><b>EAN:</b> ${p.ean}</p>
+                <p><b>Dimension:</b> ${p.dimension}</p>
+                <p><b>Weight:</b> ${p.weight}</p>
+
+                <!-- HD IMAGE -->
+                <img src="images/${img}" 
+                     onclick="openImage(this.src)"
+                     onerror="this.src='images/default.png'">
+
+                <br>
+
+                <!-- DOWNLOAD -->
+                <a href="images/${img}" download>
+                    <button>⬇ Download Image</button>
+                </a>
+
+                <br>
+
+                <!-- BACK -->
+                <button onclick="goBack()">⬅ Back</button>
+            </div>
+        `;
+
+    } else {
+        document.getElementById("result").innerHTML = `
+            <div class="card">
+                ❌ Product Not Found
+                <br><br>
+                <button onclick="goBack()">⬅ Back</button>
+            </div>
+        `;
+    }
+}
+
+/* FULL SCREEN VIEW */
+function openImage(src){
+    window.open(src, "_blank");
+}
+
+/* BACK */
+function goBack(){
+    window.location.href = "search.html";
+}
+
+loadData();
+
+</script>
+
+</body>
+</html>
